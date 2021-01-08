@@ -6,21 +6,20 @@ import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
+import java.util.List;
+
 /**
  * @author baoyh
  * @date Created in 2020/12/22 17:43
  */
 public class CuratorClient {
 
-    /**
-     * Zookeeper info
-     */
     private static final String ZK_ADDRESS = "127.0.0.1:21810";
     private static final String ZK_PATH = "bao/zkTest";
     private static final String ZK_CHILDREN_PATH = "bao/zkTest/children";
 
     public static void main(String[] args) throws Exception {
-        // 1.Connect to zk
+        // 创建连接
         CuratorFramework client = CuratorFrameworkFactory.newClient(
                 ZK_ADDRESS,
                 new RetryNTimes(10, 5000)
@@ -28,43 +27,45 @@ public class CuratorClient {
         client.start();
         System.out.println("zk client start successfully!");
 
-        // 2.Client API test
-        // 2.1 Create node
+        // 创建节点 ZK_PATH, 内容为 data1
         String data1 = "hello";
         print("create", ZK_PATH, data1);
+        // 判断是否已经存在节点
         Stat stat = client.checkExists().forPath(ZK_PATH);
+        // 不存在则创建
         if (stat == null) {
             client.create().
-                    creatingParentsIfNeeded().
-                    withMode(CreateMode.EPHEMERAL).
-                    forPath(ZK_PATH, data1.getBytes());
+                    creatingParentsIfNeeded().  // 创建路径上的父节点
+                    withMode(CreateMode.EPHEMERAL). // 设置节点为临时节点, 默认为 CreateMode.PERSISTENT
+                    forPath(ZK_PATH, data1.getBytes());  // 创建路径并设置
         }
 
-        // 2.2 Get node and data
         print("ls", "/");
+        // 列出路径下的所有子节点
         print(client.getChildren().forPath("/"));
         print("get", ZK_PATH);
+        // 获取节点下的数据
         print(client.getData().forPath(ZK_PATH));
 
-        // 2.3 Modify data
         String data2 = "world";
         print("set", ZK_PATH, data2);
+        // 重新设置路径下的值
         client.setData().forPath(ZK_PATH, data2.getBytes());
         print("get", ZK_PATH);
         print(client.getData().forPath(ZK_PATH));
 
-        // 2.4 Add child path
         String data3 = "world";
         stat = client.checkExists().forPath(ZK_CHILDREN_PATH);
         if (stat == null) {
             print("set", ZK_CHILDREN_PATH, data3);
+            // 添加子节点
             client.create().forPath(ZK_CHILDREN_PATH, data3.getBytes());
             print("get", ZK_CHILDREN_PATH);
             print(client.getData().forPath(ZK_CHILDREN_PATH));
         }
 
-        // 2.5 Remove node
         print("delete", ZK_PATH);
+        // 删除节点
         client.delete().deletingChildrenIfNeeded().forPath(ZK_PATH);
         print("ls", "/");
         print(client.getChildren().forPath("/"));

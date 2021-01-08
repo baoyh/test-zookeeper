@@ -30,13 +30,14 @@ public class CuratorWatcher {
 
         // 仅监听当前节点的变化
         NodeCache nodeCache = new NodeCache(client, ZK_PATH, true);
+        // 添加监听器
         nodeCache.getListenable().addListener(() -> System.out.println("[NodeCache] New data: " + new String(nodeCache.getCurrentData().getData())));
+        // 启动监听
         nodeCache.start();
 
-        // 监听当前节点和子节点的变化
+        // 仅监听当前节点和子节点的变化
         PathChildrenCache pathChildrenCache = new PathChildrenCache(client, ZK_PATH, true);
         pathChildrenCache.getListenable().addListener((zkClient, event) -> {
-            // Listener for PathChildrenCache changes
             ChildData data = event.getData();
             if (data == null) {
                 System.out.println("[PathChildrenCache] No data in event[" + event + "]");

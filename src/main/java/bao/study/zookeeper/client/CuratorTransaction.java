@@ -3,7 +3,6 @@ package bao.study.zookeeper.client;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
-import org.apache.zookeeper.CreateMode;
 
 /**
  * @author baoyh
@@ -21,14 +20,14 @@ public class CuratorTransaction {
 
         String data = "hello";
         // add this to throw exception
-        client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(ZK_PATH, data.getBytes());
+        client.create().creatingParentsIfNeeded().forPath(ZK_PATH, data.getBytes());
 
         // default createMode is persistent
         String transaction = "transaction";
         client.inTransaction().
-                create().withMode(CreateMode.PERSISTENT).forPath(ZK_PATH_TRANSACTION, transaction.getBytes()).
+                create().forPath(ZK_PATH_TRANSACTION, transaction.getBytes()).
                 and().
-                create().withMode(CreateMode.PERSISTENT).forPath(ZK_PATH, data.getBytes()).
+                create().forPath(ZK_PATH, data.getBytes()).
                 and().commit();
     }
 }

@@ -2,10 +2,9 @@ package bao.study.zookeeper.client;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.NodeCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.api.GetDataBuilder;
+import org.apache.curator.framework.listen.Listenable;
+import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.retry.RetryNTimes;
 
 /**
@@ -28,6 +27,13 @@ public class CuratorWatcher {
         client.start();
         System.out.println("zk client start successfully!");
 
+        // -----------  一次注册一次监听  ------------------
+        client.getData().usingWatcher((org.apache.curator.framework.api.CuratorWatcher) event -> {
+            System.out.println("[CuratorWatcher] Type: " + event.getType() );
+        }).forPath(ZK_PATH);
+
+
+        // -----------  一次注册多次监听  ------------------
         // 仅监听当前节点的变化
         NodeCache nodeCache = new NodeCache(client, ZK_PATH, true);
         // 添加监听器
@@ -53,7 +59,8 @@ public class CuratorWatcher {
 
         // 监听当前节点和改节点下所有节点的变化
         TreeCache treeCache = new TreeCache(client, ZK_PATH);
-        treeCache.getListenable().addListener((zkClient, event) -> {
+        Listenable<TreeCacheListener> treeCacheListenable = treeCache.getListenable();
+        treeCacheListenable.addListener((zkClient, event) -> {
             ChildData data = event.getData();
             if (data == null) {
                 System.out.println("[TreeCache] No data in event[" + event + "]");

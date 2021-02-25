@@ -7,6 +7,8 @@ import org.apache.curator.framework.listen.Listenable;
 import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.retry.RetryNTimes;
 
+import java.util.List;
+
 /**
  * @author baoyh
  * @date Created in 2020/12/22 18:02
@@ -28,10 +30,7 @@ public class CuratorWatcher {
         System.out.println("zk client start successfully!");
 
         // -----------  一次注册一次监听  ------------------
-        client.getData().usingWatcher((org.apache.curator.framework.api.CuratorWatcher) event -> {
-            System.out.println("[CuratorWatcher] Type: " + event.getType() );
-        }).forPath(ZK_PATH);
-
+        client.getChildren().usingWatcher((org.apache.curator.framework.api.CuratorWatcher) event -> System.out.println("[CuratorWatcher] Type: " + event.getType())).forPath(ZK_PATH);
 
         // -----------  一次注册多次监听  ------------------
         // 仅监听当前节点的变化
